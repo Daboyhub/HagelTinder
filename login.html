@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - HagelTinder</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="form-box">
+        <h1>HagelTinder</h1>
+        <p>Log in om te matchen</p>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input id="user" type="text" placeholder="Gebruikersnaam" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input id="pass" type="password" placeholder="Wachtwoord" required>
+                <i class="fas fa-eye" id="togglePassword"></i>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Onthoud mij</label>
+            </div>
+
+            <button type="submit" id="loginButton">
+                <span id="buttonText">Login</span>
+                <div id="loader" class="loader"></div>
+            </button>
+
+            <div id="error-message" class="error-message"></div>
+        </form>
+
+        <p>Nog geen account? <a href="register.html">Registreren</a></p>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

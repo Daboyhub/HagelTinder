@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HagelTinder - Berichten</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="chat.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Custom styles to ensure full-height on mobile and fixed nav/header */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* FIX: Ensure the overall viewport background is white to match the container. 
+               This overrides the Tailwind 'bg-gray-100' class and the default light grey. */
+            background-color: white !important; 
+        }
+        .container {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Message bubble styles */
+        .message-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+        }
+        .message-sent {
+            background-color: #ff6036; /* HagelTinder primary color */
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        .message-received {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body class="bg-gray-100"> 
+    <div class="container" id="app-container">
+        
+        <header id="chat-header" class="fixed top-0 w-full max-w-[430px] bg-white border-b p-4 flex justify-between items-center shadow-md z-20">
+            <a href="home.html" class="text-gray-600 hover:text-gray-900 transition"><i class="fas fa-arrow-left text-xl"></i></a>
+            <h1 class="text-xl font-bold text-gray-800">Berichten</h1>
+            <div class="w-6"></div> </header>
+
+        <main id="chat-main" class="flex-1 overflow-y-auto pt-16 pb-16">
+            <div id="loading-indicator" class="p-4 text-center text-gray-500">Laden...</div>
+            <div class="p-4 bg-yellow-100 text-yellow-800 text-sm rounded-md mx-4 mb-4">
+                <i class="fas fa-user-circle mr-2"></i>Jouw ID (om chats te testen): <span id="user-id" class="font-mono text-xs font-semibold">Laden...</span>
+            </div>
+
+            <div id="chat-list-view" class="space-y-2 p-4">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Jouw Matches</h2>
+                </div>
+
+            <div id="active-chat-view" class="hidden h-full flex flex-col pt-0">
+                <div id="chat-partner-header" class="fixed top-0 w-full max-w-[430px] bg-white border-b p-3 flex items-center shadow-md z-20">
+                    <button id="back-to-list-btn" class="text-gray-600 hover:text-gray-900 transition mr-3"><i class="fas fa-arrow-left text-xl"></i></button>
+                    <div class="flex-grow">
+                        <h2 id="chat-partner-name" class="font-semibold text-lg"></h2>
+                        <p class="text-sm text-gray-500">Chat ID: <span id="current-chat-id" class="font-mono text-xs"></span></p>
+                    </div>
+                </div>
+
+                <div id="messages-container" class="flex-1 overflow-y-auto px-4 pt-[100px] pb-5">
+                    </div>
+
+                <div id="chat-input-area" class="fixed bottom-[70px] w-full max-w-[430px] bg-white p-3 border-t flex items-center shadow-inner z-20">
+                    <input type="text" id="message-input" placeholder="Typ een bericht..." class="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:border-red-400">
+                    <button id="send-button" class="ml-2 bg-red-500 hover:bg-red-600 text-white p-3 rounded-full transition duration-150" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <nav class="fixed bottom-0 w-full max-w-[430px] bg-white border-t flex justify-around p-2 shadow-xl z-30">
+            <a href="home.html" class="flex flex-col items-center p-2 text-gray-500 hover:text-red-500">
+                <i class="fas fa-fire text-xl"></i>
+                <span class="text-xs">Home</span>
+            </a>
+            <a href="likes.html" class="flex flex-col items-center p-2 text-gray-500 hover:text-red-500">
+                <i class="fas fa-star text-xl"></i>
+                <span class="text-xs">Likes</span>
+            </a>
+            <a href="chat.html" class="flex flex-col items-center p-2 text-red-500">
+                <i class="fas fa-comment text-xl"></i>
+                <span class="text-xs">Berichten</span>
+            </a>
+            <a href="profiel.html" class="flex flex-col items-center p-2 text-gray-500 hover:text-red-500">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs">Profiel</span>
+            </a>
+        </nav>
+    </div>
+
+    <script type="module">
+        // Importeer de benodigde Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, query, where, orderBy, onSnapshot, 
+            addDoc, serverTimestamp, doc, setDoc, getDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Zorg ervoor dat de logs aanstaan voor debugging
+        setLogLevel('Debug');
+
+        // Globale variabelen (geleverd door de Canvas omgeving)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let currentUserId = null;
+        let currentChatId = null;
+        let chatsUnsubscribe = null;
+        let messagesUnsubscribe = null;
+
+        // UI Elementen
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const userIdDisplay = document.getElementById('user-id');
+        const chatListView = document.getElementById('chat-list-view');
+        const activeChatView = document.getElementById('active-chat-view');
+        const messagesContainer = document.getElementById('messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatPartnerNameDisplay = document.getElementById('chat-partner-name');
+        const currentChatIdDisplay = document.getElementById('current-chat-id');
+        const backToListBtn = document.getElementById('back-to-list-btn');
+
+        // --- HULPFUNCTIES ---
+
+        /**
+         * Creeert een dummy chat tussen de huidige gebruiker en een 'match'.
+         * Dit is voor testdoeleinden, omdat we geen echte match-logica hebben.
+         */
+        async function createTestChat(otherUserId, name) {
+            if (!currentUserId) return;
+
+            // Bepaal een consistente chatId op basis van de twee gebruikers-ID's
+            const participants = [currentUserId, otherUserId].sort();
+            const chatId = participants.join('_');
+
+            const chatRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', chatId);
+            
+            // Controleer of de chat al bestaat
+            const existingChat = await getDoc(chatRef);
+            if (!existingChat.exists()) {
+                console.log(`Creating new chat ${chatId}`);
+                await setDoc(chatRef, {
+                    userAId: participants[0],
+                    userBId: participants[1],
+                    participants: participants,
+                    name: `${name} & Mij`,
+                    lastMessage: { text: "Nieuwe Match!", timestamp: serverTimestamp() }
+                });
+            } else {
+                 console.log(`Chat ${chatId} already exists.`);
+            }
+        }
+        
+        /**
+         * Simuleer matches om chats te kunnen starten.
+         * In een echte app zou dit gebeuren na een swipe-rechts match.
+         */
+        async function setupTestMatches() {
+            // Dit zijn willekeurige ID's die een "andere gebruiker" vertegenwoordigen
+            const testMatches = [
+                { id: 'match_emma_123', name: 'Emma' },
+                { id: 'match_thomas_456', name: 'Thomas' },
+                { id: 'match_sanne_789', name: 'Sanne' },
+            ];
+
+            for (const match of testMatches) {
+                await createTestChat(match.id, match.name);
+            }
+        }
+
+        /**
+         * Verstuurt een nieuw bericht naar de huidige chat.
+         */
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (text === "" || !currentChatId) return;
+
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId, 'messages');
+            
+            addDoc(messagesRef, {
+                senderId: currentUserId,
+                text: text,
+                timestamp: serverTimestamp()
+            }).then(() => {
+                messageInput.value = ''; // Leeg het invoerveld
+                sendButton.disabled = true;
+
+                // Update de 'lastMessage' in de hoofdchat document
+                const chatRef = doc(db, 'artifacts', appId, 'public', 'data', 'chats', currentChatId);
+                setDoc(chatRef, { 
+                    lastMessage: { text: text, timestamp: serverTimestamp(), senderId: currentUserId }
+                }, { merge: true });
+            }).catch(error => {
+                console.error("Error sending message:", error);
+                alertBox("Fout bij het versturen van het bericht.");
+            });
+        }
+
+        /**
+         * Toont een custom alert box i.p.v. de browser alert.
+         */
+        function alertBox(message) {
+            let box = document.createElement('div');
+            box.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                padding: 20px; background: white; border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 9999;
+                text-align: center; font-size: 16px; max-width: 80%;
+            `;
+            box.innerHTML = `<p>${message}</p><button onclick="this.parentNode.remove()" style="margin-top: 15px; padding: 8px 15px; border: none; background: #ff6036; color: white; border-radius: 5px; cursor: pointer;">OK</button>`;
+            document.body.appendChild(box);
+        }
+
+        // --- RENDER FUNCTIES ---
+
+        /**
+         * Rendert de lijst met alle actieve chats van de gebruiker.
+         */
+        function renderChatList(chats) {
+            chatListView.innerHTML = '<h2 class="text-lg font-semibold text-gray-700 mb-4">Jouw Matches</h2>';
+            if (chats.length === 0) {
+                chatListView.innerHTML += '<p class="text-center text-gray-500 mt-8">Geen actieve chats. Swipe rechts om te matchen!</p>';
+                return;
+            }
+
+            chats.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item bg-white p-3 rounded-xl shadow-sm hover:bg-gray-50 transition duration-150 flex items-center cursor-pointer';
+                chatItem.dataset.chatId = chat.id;
+                
+                // Bepaal de naam van de chatpartner
+                // Voorbeeld: als de naam 'Emma & Mij' is, toon dan 'Emma'
+                const partnerName = chat.name.split(' & ')[0];
+
+                // Simpele ronde avatar
+                chatItem.innerHTML = `
+                    <div class="w-12 h-12 bg-red-400 rounded-full flex items-center justify-center text-white text-xl font-bold mr-3">${partnerName[0]}</div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-lg">${partnerName}</h3>
+                        <p class="text-sm text-gray-500 truncate">${chat.lastMessage?.text || 'Start een gesprek!'}</p>
+                    </div>
+                    <span class="text-xs text-gray-400">${chat.lastMessage?.timestamp ? new Date(chat.lastMessage.timestamp.seconds * 1000).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                `;
+                chatListView.appendChild(chatItem);
+            });
+        }
+
+        /**
+         * Rendert de berichten binnen de actieve chat.
+         */
+        function renderMessages(messages) {
+            messagesContainer.innerHTML = '';
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<p class="text-center text-gray-500 mt-4">Nog geen berichten. Zeg iets leuks!</p>';
+            }
+
+            messages.forEach(msg => {
+                const isSent = msg.senderId === currentUserId;
+                const bubbleClass = isSent ? 'message-sent' : 'message-received';
+                const alignClass = isSent ? 'justify-end' : 'justify-start';
+
+                const bubble = document.createElement('div');
+                bubble.className = `flex ${alignClass}`;
+                bubble.innerHTML = `
+                    <div class="message-bubble ${bubbleClass}">
+                        ${msg.text}
+                    </div>
+                `;
+                messagesContainer.appendChild(bubble);
+            });
+            
+            // Scroll naar het nieuwste bericht
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // --- FIREBASE LISTENERS ---
+
+        /**
+         * Start de real-time listener voor de lijst met chats van de gebruiker.
+         */
+        function startChatsListener() {
+            if (chatsUnsubscribe) chatsUnsubscribe();
+
+            const chatsRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats');
+            
+            // Query: Zoek chats waar de huidige gebruiker een deelnemer is
+            const q = query(chatsRef, where('participants', 'array-contains', currentUserId), orderBy('lastMessage.timestamp', 'desc'));
+
+            chatsUnsubscribe = onSnapshot(q, (snapshot) => {
+                const chats = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                renderChatList(chats);
+            }, error => {
+                console.error("Error listening to chats:", error);
+            });
+        }
+
+        /**
+         * Start de real-time listener voor berichten in een specifieke chat.
+         */
+        function startMessagesListener(chatId, partnerName) {
+            if (messagesUnsubscribe) messagesUnsubscribe();
+            
+            currentChatId = chatId;
+            
+            // Update de header van de actieve chat
+            chatPartnerNameDisplay.textContent = partnerName;
+            currentChatIdDisplay.textContent = chatId;
+            
+            // Toon de actieve chat view
+            chatListView.parentElement.classList.add('hidden');
+            activeChatView.classList.remove('hidden');
+
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatId, 'messages');
+            const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+            messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+                const messages = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                renderMessages(messages);
+            }, error => {
+                console.error("Error listening to messages:", error);
+            });
+        }
+
+        // --- INITIALISATIE ---
+
+        /**
+         * Initialiseer Firebase, voer authenticatie uit en start de app.
+         */
+        async function initializeAppAndAuth() {
+            if (Object.keys(firebaseConfig).length === 0) {
+                 loadingIndicator.textContent = "FOUT: Firebase configuratie ontbreekt.";
+                 return;
+            }
+            
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticeer de gebruiker
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        userIdDisplay.textContent = currentUserId;
+                        loadingIndicator.classList.add('hidden');
+                        
+                        // Zorg ervoor dat er testchats zijn en start dan de listener
+                        setupTestMatches().then(startChatsListener);
+
+                    } else {
+                        console.log("Gebruiker is uitgelogd of anoniem.");
+                        loadingIndicator.textContent = "Inloggen mislukt. Probeer opnieuw.";
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase Initialisatie Fout:", error);
+                loadingIndicator.textContent = `Fout bij initialisatie: ${error.message}`;
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        
+        // Zorg ervoor dat de zendknop alleen actief is als er tekst is
+        messageInput.addEventListener('input', () => {
+            sendButton.disabled = messageInput.value.trim() === '';
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+        
+        // Verzend bericht met ENTER-toets
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendButton.disabled) {
+                sendMessage();
+            }
+        });
+
+        // Event listener voor het klikken op een chat in de lijst
+        chatListView.addEventListener('click', (e) => {
+            const chatItem = e.target.closest('.chat-item');
+            if (chatItem) {
+                const chatId = chatItem.dataset.chatId;
+                const partnerName = chatItem.querySelector('h3').textContent;
+                startMessagesListener(chatId, partnerName);
+            }
+        });
+
+        // Event listener om terug te gaan naar de chatlijst
+        backToListBtn.addEventListener('click', () => {
+            if (messagesUnsubscribe) messagesUnsubscribe();
+            currentChatId = null;
+            activeChatView.classList.add('hidden');
+            chatListView.parentElement.classList.remove('hidden');
+        });
+
+
+        // Start de applicatie
+        initializeAppAndAuth();
+
+    </script>
+</body>
+</html>

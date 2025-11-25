@@ -1,0 +1,262 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    background: #fff;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(to right, #fd267a, #ff6036);
+    color: white;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo i {
+    font-size: 28px;
+}
+
+.header-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 20px;
+}
+
+.header-icons i {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.header-icons i:hover {
+    transform: scale(1.1);
+}
+
+/* Card Stack */
+.card-stack {
+    padding: 20px;
+    height: calc(100vh - 140px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    width: 100%;
+    height: 90%;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    transition: transform 0.3s;
+    
+    /* Zorgt ervoor dat de JS de opacity kan regelen */
+    --nope-opacity: 0;
+    --like-opacity: 0; 
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- SWIPE LABELS (NIEUW) --- */
+.card::before, .card::after {
+    position: absolute;
+    top: 50px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 10;
+    line-height: 1;
+}
+
+/* NOPE Label (Links/Dislike) */
+.card::before {
+    content: 'NOPE';
+    left: 20px;
+    color: #fd267a;
+    border: 4px solid #fd267a;
+    transform: rotate(-30deg);
+    opacity: var(--nope-opacity, 0); /* Koppelen aan JS-variabele */
+}
+
+/* LIKE Label (Rechts/Like) */
+.card::after {
+    content: 'LIKE';
+    right: 20px;
+    color: #2dd08a;
+    border: 4px solid #2dd08a;
+    transform: rotate(30deg);
+    opacity: var(--like-opacity, 0); /* Koppelen aan JS-variabele */
+}
+/* --- SWIPE LABELS EINDE --- */
+
+
+.card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+    padding: 30px 20px 20px;
+}
+
+.card-details h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.age {
+    font-weight: 300;
+    font-size: 28px;
+}
+
+.card-details p {
+    margin: 5px 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.action-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.undo {
+    color: #f5b942;
+}
+
+.dislike {
+    color: #fd267a;
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+}
+
+.star {
+    color: #1e9cee;
+}
+
+.like {
+    color: #2dd08a;
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+}
+
+.boost {
+    color: #936dff;
+}
+
+/* Styling voor als er geen profielen meer zijn */
+.no-more {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+    color: #888;
+    font-size: 18px;
+    padding: 20px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: #999;
+    font-size: 12px;
+    transition: color 0.3s;
+    padding: 5px 15px;
+}
+
+.nav-item i {
+    font-size: 24px;
+}
+
+.nav-item.active {
+    color: #fd267a;
+}
+
+.nav-item:hover {
+    color: #fd267a;
+}

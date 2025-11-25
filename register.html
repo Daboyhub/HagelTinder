@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Registreren</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="form-box">
+    <h2>Registreren</h2>
+
+    <input id="user" type="text" placeholder="Gebruikersnaam"><br>
+    <input id="pass" type="password" placeholder="Wachtwoord"><br>
+    <button onclick="register()">Registreren</button>
+
+    <p>Al een account? <a href="login.html">Inloggen</a></p>
+</div>
+
+<script>
+function register() {
+    let user = document.getElementById("user").value;
+    let pass = document.getElementById("pass").value;
+
+    if (localStorage.getItem(user)) {
+        alert("Gebruiker bestaat al!");
+        return;
+    }
+
+    localStorage.setItem(user, pass);
+    alert("Registratie gelukt!");
+
+    window.location.href = "home.html";
+}
+</script>
+
+</body>
+</html>

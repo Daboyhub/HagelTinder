@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tinder - Profiel</title>
+    <link rel="stylesheet" href="profiel.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- NEW: Load saved data from localStorage when the page loads ---
+        function loadProfileData() {
+            // Load Header (Name, Age, Location)
+            const savedName = localStorage.getItem('profileName');
+            const savedAge = localStorage.getItem('profileAge');
+            const savedLocation = localStorage.getItem('profileLocation');
+
+            if (savedName && savedAge) {
+                const nameAgeWrapper = document.querySelector('.name-age-wrapper');
+                if (nameAgeWrapper) {
+                    nameAgeWrapper.innerHTML = `<span class="profile-name">${savedName}</span>, <span class="profile-age">${savedAge}</span>`;
+                }
+            }
+            if (savedLocation) {
+                const locationElement = document.querySelector('.profile-location');
+                if (locationElement) {
+                    const flag = savedLocation.toLowerCase().includes('nederland') ? '🇳🇱 ' : '';
+                    locationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${flag}${savedLocation}`;
+                }
+            }
+
+            // Load Bio
+            const savedBio = localStorage.getItem('profileBio');
+            if (savedBio) {
+                const bioElement = document.querySelector('.bio');
+                if (bioElement) {
+                    bioElement.textContent = savedBio;
+                }
+            }
+
+            // Load Interests
+            const savedInterests = localStorage.getItem('profileInterests');
+            if (savedInterests) {
+                const interestsArray = JSON.parse(savedInterests);
+                const interestsContainer = document.querySelector('.interests');
+                if (interestsContainer) {
+                    interestsContainer.innerHTML = ''; // Clear existing tags
+                    interestsArray.forEach(interest => {
+                        const tag = document.createElement('span');
+                        tag.className = 'interest-tag';
+                        tag.textContent = interest;
+                        interestsContainer.appendChild(tag);
+                    });
+                }
+            }
+            
+            // Load Info
+            const savedInfo = localStorage.getItem('profileInfo');
+            if (savedInfo) {
+                const infoArray = JSON.parse(savedInfo);
+                const infoList = document.querySelector('.info-list');
+                if (infoList) {
+                    infoList.innerHTML = ''; // Clear existing items
+                    infoArray.forEach(item => {
+                        const infoItem = document.createElement('div');
+                        infoItem.className = 'info-item';
+                        infoItem.innerHTML = `<i class="${item.icon}"></i><span>${item.text}</span>`;
+                        infoList.appendChild(infoItem);
+                    });
+                }
+            }
+
+            // Load Profile Image
+            const savedImage = localStorage.getItem('profileImage');
+            if (savedImage) {
+                const profileImg = document.querySelector('.profile-image img');
+                if (profileImg) {
+                    profileImg.src = savedImage;
+                }
+            }
+        }
+
+        // Run the load function on startup
+        loadProfileData();
+
+
+        // --- Core Helper Functions ---
+
+        // Maakt de Save/Cancel knoppen en beheert de cleanup
+        function createActionButtons(editButtonToHide) {
+            const container = document.createElement('div');
+            container.className = 'action-buttons-container';
+            container.style.cssText = `
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            `;
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'save-btn';
+            saveBtn.innerHTML = '<i class="fas fa-check"></i> Opslaan';
+            saveBtn.style.cssText = `flex: 1; padding: 10px; background: linear-gradient(to right, #fd267a, #ff6036); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;`;
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'cancel-btn';
+            cancelBtn.innerHTML = '<i class="fas fa-times"></i> Annuleren';
+            cancelBtn.style.cssText = `flex: 1; padding: 10px; background: #999; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;`;
+            
+            saveBtn.addEventListener('mouseenter', () => saveBtn.style.transform = 'scale(1.05)');
+            saveBtn.addEventListener('mouseleave', () => saveBtn.style.transform = 'scale(1)');
+            cancelBtn.addEventListener('mouseenter', () => cancelBtn.style.transform = 'scale(1.05)');
+            cancelBtn.addEventListener('mouseleave', () => cancelBtn.style.transform = 'scale(1)');
+            
+            container.appendChild(saveBtn);
+            container.appendChild(cancelBtn);
+
+            function cleanup() {
+                container.remove();
+                // FIX: Use the direct reference to the edit button that was passed in
+                if (editButtonToHide) {
+                    editButtonToHide.style.display = 'block';
+                }
+            }
+            
+            return { container, cleanup };
+        }
+
+        // --- Hoofd Profiel Sectie Bewerking ---
+
+        const sectionEditButtons = document.querySelectorAll('.profile-section .edit-btn');
+        sectionEditButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const section = this.closest('.profile-section');
+                const sectionHeader = section.querySelector('.section-header h3').textContent.trim();
+                
+                if (section.querySelector('.action-buttons-container')) {
+                    return;
+                }
+
+                this.style.display = 'none';
+
+                if (sectionHeader === 'Over mij') {
+                    editBio(section);
+                } else if (sectionHeader === 'Interesses') {
+                    editInterests(section);
+                } else if (sectionHeader === 'Informatie') {
+                    editInfo(section);
+                }
+            });
+        });
+
+        // --- FUNCTIE: Naam en Plaats Bewerken ---
+        
+        const headerEditButton = document.querySelector('.edit-header-btn'); 
+        
+        function editHeader(headerContainer) {
+            const nameAgeWrapper = headerContainer.querySelector('.name-age-wrapper');
+            const nameElement = headerContainer.querySelector('.profile-name'); 
+            const ageElement = headerContainer.querySelector('.profile-age');
+            const locationElement = headerContainer.querySelector('.profile-location');
+            
+            const currentName = nameElement.textContent;
+            const currentAge = ageElement.textContent;
+            const currentLocation = locationElement.textContent.replace('🇳🇱 ', ''); // Verwijder de vlag voor bewerking
+            const editButton = headerContainer.querySelector('.edit-header-btn');
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = currentName;
+            nameInput.placeholder = 'Naam';
+            
+            const ageInput = document.createElement('input');
+            ageInput.type = 'number';
+            ageInput.value = currentAge;
+            ageInput.placeholder = 'Leeftijd';
+            ageInput.style.width = '60px';
+            
+            const locationInput = document.createElement('input');
+            locationInput.type = 'text';
+            locationInput.value = currentLocation;
+            locationInput.placeholder = 'Plaats, Land';
+
+            const nameAgeStyle = `display: flex; gap: 10px; align-items: center; margin-bottom: 10px;`;
+            const inputStyle = `padding: 8px; font-size: 20px; font-family: inherit; border: 2px solid #fd267a; border-radius: 8px; outline: none;`;
+
+            nameInput.style.cssText = `flex: 1; ${inputStyle}`;
+            ageInput.style.cssText = inputStyle;
+            locationInput.style.cssText = `width: 100%; ${inputStyle}`;
+
+            const nameAgeInputWrapper = document.createElement('div');
+            nameAgeInputWrapper.style.cssText = nameAgeStyle;
+            nameAgeInputWrapper.appendChild(nameInput);
+            nameAgeInputWrapper.appendChild(ageInput);
+            
+            nameAgeWrapper.replaceWith(nameAgeInputWrapper);
+            locationElement.replaceWith(locationInput);
+            nameInput.focus();
+            
+            const { container: buttonContainer, cleanup } = createActionButtons(editButton);
+            headerContainer.appendChild(buttonContainer);
+            
+            buttonContainer.querySelector('.save-btn').addEventListener('click', function() {
+                const newName = nameInput.value;
+                const newAge = ageInput.value;
+                const newLocation = locationInput.value;
+
+                localStorage.setItem('profileName', newName);
+                localStorage.setItem('profileAge', newAge);
+                localStorage.setItem('profileLocation', newLocation);
+                
+                const newNameAgeWrapper = document.createElement('h2');
+                newNameAgeWrapper.className = 'name-age-wrapper';
+                newNameAgeWrapper.innerHTML = `<span class="profile-name">${newName}</span>, <span class="profile-age">${newAge}</span>`;
+                
+                const newLocationElement = document.createElement('p');
+                newLocationElement.className = 'profile-location';
+                const flag = newLocation.toLowerCase().includes('nederland') ? '🇳🇱 ' : '';
+                newLocationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${flag}${newLocation}`;
+
+                nameAgeInputWrapper.replaceWith(newNameAgeWrapper);
+                locationInput.replaceWith(newLocationElement);
+                cleanup();
+            });
+            
+            buttonContainer.querySelector('.cancel-btn').addEventListener('click', function() {
+                const originalNameAgeWrapper = document.createElement('h2');
+                originalNameAgeWrapper.className = 'name-age-wrapper';
+                originalNameAgeWrapper.innerHTML = `<span class="profile-name">${currentName}</span>, <span class="profile-age">${currentAge}</span>`;
+
+                const originalLocationElement = document.createElement('p');
+                originalLocationElement.className = 'profile-location';
+                originalLocationElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${currentLocation}`;
+
+                nameAgeInputWrapper.replaceWith(originalNameAgeWrapper);
+                locationInput.replaceWith(originalLocationElement);
+                cleanup();
+            });
+        }
+
+        if (headerEditButton) {
+            headerEditButton.addEventListener('click', function() {
+                const headerContainer = this.closest('.profile-details');
+                if (headerContainer.querySelector('.action-buttons-container')) {
+                    return;
+                }
+                this.style.display = 'none';
+                editHeader(headerContainer);
+            });
+        }
+            
+        // Edit Bio Section
+        function editBio(section) {
+            const bioText = section.querySelector('.bio');
+            const currentText = bioText.textContent;
+            const editButton = section.querySelector('.edit-btn');
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = currentText;
+            textarea.style.cssText = `width: 100%; min-height: 80px; padding: 10px; font-size: 16px; font-family: inherit; border: 2px solid #fd267a; border-radius: 10px; resize: vertical; outline: none;`;
+            
+            bioText.replaceWith(textarea);
+            textarea.focus();
+            
+            const { container: buttonContainer, cleanup } = createActionButtons(editButton);
+            section.appendChild(buttonContainer);
+            
+            buttonContainer.querySelector('.save-btn').addEventListener('click', function() {
+                const newBioText = textarea.value;
+                
+                localStorage.setItem('profileBio', newBioText);
+
+                const newBio = document.createElement('p');
+                newBio.className = 'bio';
+                newBio.textContent = newBioText;
+                textarea.replaceWith(newBio);
+                cleanup();
+            });
+            
+            buttonContainer.querySelector('.cancel-btn').addEventListener('click', function() {
+                const newBio = document.createElement('p');
+                newBio.className = 'bio';
+                newBio.textContent = currentText;
+                textarea.replaceWith(newBio);
+                cleanup();
+            });
+        }
+        
+        // Edit Interests Section
+        function editInterests(section) {
+            const interestsContainer = section.querySelector('.interests');
+            const editButton = section.querySelector('.edit-btn');
+            const currentInterests = Array.from(interestsContainer.querySelectorAll('.interest-tag')).map(tag => tag.textContent);
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentInterests.join(', ');
+            input.placeholder = 'Voer interesses in, gescheiden door komma\'s';
+            input.style.cssText = `width: 100%; padding: 10px; font-size: 16px; font-family: inherit; border: 2px solid #fd267a; border-radius: 10px; outline: none; margin-bottom: 10px;`;
+            
+            const originalHTML = interestsContainer.innerHTML;
+            
+            interestsContainer.innerHTML = '';
+            interestsContainer.appendChild(input);
+            input.focus();
+            
+            const { container: buttonContainer, cleanup } = createActionButtons(editButton);
+            section.appendChild(buttonContainer);
+            
+            const renderInterests = (interestArray) => {
+                interestsContainer.innerHTML = '';
+                interestArray.forEach(interest => {
+                    const tag = document.createElement('span');
+                    tag.className = 'interest-tag';
+                    tag.textContent = interest;
+                    interestsContainer.appendChild(tag);
+                });
+            };
+
+            buttonContainer.querySelector('.save-btn').addEventListener('click', function() {
+                const newInterests = input.value.split(',').map(i => i.trim()).filter(i => i);
+                
+                localStorage.setItem('profileInterests', JSON.stringify(newInterests));
+
+                renderInterests(newInterests);
+                cleanup();
+            });
+            
+            buttonContainer.querySelector('.cancel-btn').addEventListener('click', function() {
+                interestsContainer.innerHTML = originalHTML; 
+                cleanup();
+            });
+        }
+        
+        // Edit Info Section
+        function editInfo(section) {
+            const infoList = section.querySelector('.info-list');
+            const editButton = section.querySelector('.edit-btn');
+            const infoItems = Array.from(infoList.querySelectorAll('.info-item'));
+            
+            const currentValues = infoItems.map(item => ({
+                icon: item.querySelector('i') ? item.querySelector('i').className : '',
+                text: item.querySelector('span') ? item.querySelector('span').textContent : ''
+            }));
+            
+            const originalHTML = infoList.innerHTML;
+            
+            infoList.innerHTML = '';
+            const inputs = [];
+            
+            currentValues.forEach((item) => {
+                const inputWrapper = document.createElement('div');
+                inputWrapper.style.cssText = 'display: flex; align-items: center; gap: 15px; margin-bottom: 10px;';
+                
+                const icon = document.createElement('i');
+                icon.className = item.icon;
+                icon.style.cssText = 'color: #fd267a; font-size: 20px; width: 25px;';
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = item.text;
+                input.style.cssText = `flex: 1; padding: 8px; font-size: 16px; font-family: inherit; border: 2px solid #fd267a; border-radius: 8px; outline: none;`;
+                
+                inputWrapper.appendChild(icon);
+                inputWrapper.appendChild(input);
+                infoList.appendChild(inputWrapper);
+                inputs.push({ icon: item.icon, input });
+            });
+            
+            const { container: buttonContainer, cleanup } = createActionButtons(editButton);
+            section.appendChild(buttonContainer);
+            
+            const renderInfo = (dataArray) => {
+                infoList.innerHTML = '';
+                dataArray.forEach(item => {
+                    const infoItem = document.createElement('div');
+                    infoItem.className = 'info-item';
+                    infoItem.innerHTML = `<i class="${item.icon}"></i><span>${item.text}</span>`;
+                    infoList.appendChild(infoItem);
+                });
+            };
+
+            buttonContainer.querySelector('.save-btn').addEventListener('click', function() {
+                const newValues = inputs.map(item => ({ icon: item.icon, text: item.input.value }));
+                
+                localStorage.setItem('profileInfo', JSON.stringify(newValues));
+
+                renderInfo(newValues);
+                cleanup();
+            });
+            
+            buttonContainer.querySelector('.cancel-btn').addEventListener('click', function() {
+                infoList.innerHTML = originalHTML;
+                cleanup();
+            });
+        }
+
+        // Photo Edit Functionality
+        const editPhotoBtn = document.querySelector('.edit-photo');
+        const profileImg = document.querySelector('.profile-image img');
+
+        if (editPhotoBtn && profileImg) {
+            editPhotoBtn.addEventListener('click', function() {
+                const modal = document.createElement('div');
+                modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;`;
+                
+                const modalContent = document.createElement('div');
+                modalContent.style.cssText = `background: white; padding: 30px; border-radius: 20px; max-width: 350px; width: 90%; text-align: center;`;
+                
+                modalContent.innerHTML = `
+                    <h3 style="margin-bottom: 20px; color: #333;">Profielfoto wijzigen</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <button id="uploadPhoto" style="padding: 15px; background: linear-gradient(to right, #fd267a, #ff6036); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;"><i class="fas fa-upload"></i> Foto uploaden</button>
+                        <button id="generatePhoto" style="padding: 15px; background: linear-gradient(to right, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;"><i class="fas fa-magic"></i> Foto genereren (AI)</button>
+                        <button id="closeModal" style="padding: 15px; background: #999; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;"><i class="fas fa-times"></i> Annuleren</button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                `;
+                
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+                
+                document.getElementById('uploadPhoto').addEventListener('click', function() {
+                    document.getElementById('fileInput').click();
+                });
+                
+                document.getElementById('fileInput').addEventListener('change', function(e) {
+                    const file = e.target.files[0]; 
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const imageData = event.target.result;
+                            profileImg.src = imageData;
+                            localStorage.setItem('profileImage', imageData);
+                            modal.remove();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+                document.getElementById('generatePhoto').addEventListener('click', function() {
+                    const prompt = window.prompt('Beschrijf de foto die je wilt genereren:');
+                    if (prompt) {
+                        alert('AI foto generatie functionaliteit vereist een backend service. De prompt is: ' + prompt);
+                        modal.remove();
+                    }
+                });
+                
+                document.getElementById('closeModal').addEventListener('click', function() {
+                    modal.remove();
+                });
+                
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+            });
+        }
+    });
+</script>
+    <div class="container">
+
+        <header>
+        <h1>Profiel</h1>
+        <div class="header-icons">
+        <a href="settings.html" style="color: white;"><i class="fas fa-cog"></i></a>
+    </div>
+        </header>
+
+        <div class="profile-content">
+            <div class="profile-header">
+                <div class="profile-image">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500" alt="Profiel">
+                    <button class="edit-photo">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div class="profile-details">
+                    <h2 class="name-age-wrapper">
+                        <span class="profile-name">Name</span>, 
+                        <span class="profile-age">Age</span>
+                    </h2>
+                    <p class="profile-location">
+                        <i class="fas fa-map-marker-alt"></i> BL gemeente, België
+                    </p>
+                    <button class="edit-header-btn edit-btn">
+                         <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3>Over mij</h3>
+                    <button class="edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+                <p class="bio">Avonturier | Koffieliefhebber ☕ | Altijd op zoek naar nieuwe ervaringen</p>
+            </div>
+
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3>Interesses</h3>
+                    <button class="edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+                <div class="interests">
+                    <span class="interest-tag">Reizen</span>
+                    <span class="interest-tag">Fotografie</span>
+                    <span class="interest-tag">Koken</span>
+                    <span class="interest-tag">Fitness</span>
+                    <span class="interest-tag">Muziek</span>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3>Informatie</h3>
+                    <button class="edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+                <div class="info-list">
+                    <div class="info-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Student</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>College Hagelstein</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-home"></i>
+                        <span>WoonPlaats</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item">
+                <i class="fas fa-fire"></i>
+                <span>Home</span>
+            </a>
+            <a href="likes.html" class="nav-item">
+                <i class="fas fa-star"></i>
+                <span>Likes</span>
+            </a>
+            <a href="chat.html" class="nav-item">
+                <i class="fas fa-comment"></i>
+                <span>Berichten</span>
+            </a>
+            <a href="profiel.html" class="nav-item active">
+                <i class="fas fa-user"></i>
+                <span>Profiel</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

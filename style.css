@@ -1,0 +1,162 @@
+/* Algemene styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Container */
+.form-box {
+    background: white;
+    padding: 40px;
+    width: 380px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.form-box:hover {
+    transform: translateY(-5px);
+}
+
+/* Titel */
+.form-box h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5em;
+    background: linear-gradient(to right, #fd267a, #ff6036);
+    
+    /* NEW: Add the standard property first */
+    background-clip: text;
+    
+    /* Keep this for compatibility with older browsers */
+    -webkit-background-clip: text;
+    
+    /* This is required for the effect to work in WebKit browsers */
+    -webkit-text-fill-color: transparent;
+    
+    font-weight: 700;
+}
+
+.form-box > p {
+    color: #555;
+    margin-bottom: 30px;
+}
+
+/* Input velden */
+.input-group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.input-group .fa-eye {
+    left: auto;
+    right: 15px;
+    cursor: pointer;
+    color: #888;
+}
+
+input {
+    width: 100%;
+    padding: 15px 15px 15px 45px; /* Left padding for icon */
+    border: 1px solid #ddd;
+    border-radius: 50px; /* Pill shape */
+    font-size: 16px;
+    box-sizing: border-box; /* Important for padding */
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #fd267a;
+}
+
+/* Remember Me Checkbox */
+.remember-me {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.remember-me input {
+    width: auto;
+    margin-right: 8px;
+    padding: 0;
+}
+
+/* Knop */
+button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to right, #fd267a, #ff6036);
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: scale(1.02);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Loader */
+.loader {
+    display: none;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error message */
+.error-message {
+    color: #d9534f;
+    margin-top: 15px;
+    font-size: 14px;
+    min-height: 20px; /* Prevents layout shift */
+}
+
+/* Linkjes */
+p a {
+    color: #fd267a;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
