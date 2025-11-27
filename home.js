@@ -4,7 +4,7 @@
  */
 function checkAuthentication() {
     if (!localStorage.getItem('loggedInUser')) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }
 }
 
@@ -254,4 +254,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Start de app ---
     loadNextCard();
+
 });
