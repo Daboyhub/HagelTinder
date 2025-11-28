@@ -286,4 +286,32 @@ input:checked + .slider:before {
 
 .nav-item.active {
     color: #fd267a;
+
+}
+/* style.css of settings.css */
+
+/* Standaard (Lichte) Modus - Dit zijn je huidige stijlen */
+:root {
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --card-background: #f0f0f0;
+}
+
+/* Donkere Modus Stijlen */
+body.dark-mode {
+    --background-color: #121212; /* Donkere achtergrond */
+    --text-color: #e0e0e0;      /* Lichte tekst */
+    --card-background: #1e1e1e; /* Donkere kaarten */
+}
+
+/* Pas nu je elementen aan met deze variabelen */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s; /* Vloeiende overgang */
+}
+
+.card {
+    background-color: var(--card-background);
+    /* ... andere stijlen ... */
 }
