@@ -4,79 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instellingen - HagelTinder</title>
-    <link rel="stylesheet" href="settings.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* ==================================== */
+        /* 1. CSS Variabelen voor Thema's */
+        /* ==================================== */
+        
+        /* Lichte Modus (Standaard) */
+        :root {
+            --background-color: #f4f7f6;
+            --text-color: #1e1e1e;
+            --card-background: #ffffff;
+            --button-color: #ff5864; /* De 'Tinder' rode kleur */
+        }
+
+        /* Donkere Modus wordt geactiveerd met de class 'dark-mode' op de body */
+        body.dark-mode {
+            --background-color: #1a1a1a;
+            --text-color: #f4f7f6;
+            --card-background: #2c2c2c;
+            --button-color: #e04a57;
+        }
+
+        /* ==================================== */
+        /* 2. Algemene Stijlen (Gebruik de variabelen) */
+        /* ==================================== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s; /* Vloeiende overgang */
+        }
+        
+        .settings-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--background-color);
+        }
+        
+        h1 {
+            color: var(--text-color);
+            border-bottom: 2px solid var(--button-color);
+            padding-bottom: 10px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* Simpele stijl voor de Dark Mode schakelaar (checkbox) */
+        #dark-mode-toggle {
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--button-color); /* Kleurt de checkbox in de themakleur */
+        }
+
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <a href="profiel.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <h1>Instellingen</h1>
-            <div class="header-icons">
-                <i class="fas fa-cog" style="opacity: 0;"></i> </div>
-        </header>
+    <div class="settings-container">
+        <h1>Instellingen ⚙️</h1>
 
-        <main class="settings-content">
-            
-            <section class="settings-group">
-                <h2>Discovery Instellingen</h2>
-                <div class="setting-item">
-                    <label for="distanceRange">Max Afstand: <span id="distanceValue">50</span> km</label>
-                    <input type="range" id="distanceRange" min="1" max="100" value="50">
-                </div>
-                <div class="setting-item">
-                    <label for="ageMin">Leeftijdscategorie: <span id="ageMinVal">18</span> - <span id="ageMaxVal">35</span></label>
-                    <div class="range-slider">
-                        <input type="range" id="ageMin" min="1" max="19" value="1">
-                        <input type="range" id="ageMax" min="1" max="19" value="19">
-                    </div>
-                </div>
-                <div class="setting-item toggle-item">
-                    <label for="showMe">Mijn profiel tonen</label>
-                    <label class="switch">
-                        <input type="checkbox" id="showMe" checked>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-            </section>
-
-            <section class="settings-group">
-                <h2>Account</h2>
-                <button id="logoutBtn" class="action-btn logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Uitloggen
-                </button>
-                <button class="action-btn delete-btn">
-                    <i class="fas fa-user-times"></i> Verwijder Account
-                </button>
-            </section>
-
-            <section class="settings-group">
-                <h2>Help & Support</h2>
-                <a href="#" class="link-item"><i class="fas fa-question-circle"></i> FAQ</a>
-                <a href="#" class="link-item"><i class="fas fa-envelope"></i> Contacteer Ons</a>
-            </section>
-
-            <p class="version">HagelTinder Versie 1.0</p>
-        </main>
+        <div class="setting-item">
+            <label for="dark-mode-toggle">Donkere Modus Inschakelen</label>
+            <input type="checkbox" id="dark-mode-toggle">
+        </div>
         
-        <nav class="bottom-nav">
-            <a href="home.html" class="nav-item">
-                <i class="fas fa-fire"></i>
-                <span>Home</span>
-            </a>
-            <a href="likes.html" class="nav-item">
-                <i class="fas fa-star"></i>
-                <span>Likes</span>
-            </a>
-            <a href="chat.html" class="nav-item">
-                <i class="fas fa-comment"></i>
-                <span>Berichten</span>
-            </a>
-            <a href="profiel.html" class="nav-item active">
-                <i class="fas fa-user"></i>
-                <span>Profiel</span>
-            </a>
-        </nav>
+        <div class="setting-item">
+            <label>Zoekafstand</label>
+            <span>50 km</span>
+        </div>
+
     </div>
 
     <script src="settings.js"></script>
