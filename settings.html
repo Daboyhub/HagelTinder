@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="settings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="light-mode"> <div class="container">
+<body>
+    <div class="container">
         <header>
             <a href="profiel.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
             <h1>Instellingen</h1>
@@ -26,8 +27,8 @@
                 <div class="setting-item">
                     <label for="ageMin">Leeftijdscategorie: <span id="ageMinVal">18</span> - <span id="ageMaxVal">35</span></label>
                     <div class="range-slider">
-                        <input type="range" id="ageMin" min="18" max="50" value="18"> 
-                        <input type="range" id="ageMax" min="19" max="60" value="35">
+                        <input type="range" id="ageMin" min="1" max="19" value="1">
+                        <input type="range" id="ageMax" min="1" max="19" value="19">
                     </div>
                 </div>
                 <div class="setting-item toggle-item">
@@ -39,17 +40,6 @@
                 </div>
             </section>
 
-            <section class="settings-group">
-                <h2>Uiterlijk</h2>
-                <div class="setting-item toggle-item">
-                    <label for="dark-mode-toggle">Donkere Modus</label>
-                    <label class="switch">
-                        <input type="checkbox" id="dark-mode-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-            </section>
-            
             <section class="settings-group">
                 <h2>Account</h2>
                 <button id="logoutBtn" class="action-btn logout-btn">
