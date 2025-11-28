@@ -34,12 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Laadt de Dark Mode voorkeur uit localStorage en past deze toe.
-     * Deze functie is essentieel om de modus op ALLE pagina's te behouden.
+     * DEZE FUNCTIE MOET OOK GEROEPEN WORDEN IN ELK ANDER JS-BESTAND (home.js, chat.js)
+     * om de modus op alle pagina's te behouden.
      */
     function loadDarkModePreference() {
         const preference = localStorage.getItem(darkModeKey);
         
-        // Alleen toepassen als de voorkeur 'true' is
+        // Als de voorkeur 'true' is, activeer dan de Dark Mode
         if (preference === 'true') {
             applyDarkMode(true);
         } else {
@@ -49,16 +50,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Instellingen laden bij opstarten ---
     function loadSettings() {
-        // ... (Bestaande logica) ...
-
+        // === LAAD DARK MODE VOORKEUR HIER EERST ===
+        loadDarkModePreference();
+        
         // Afstand
         const savedDistance = localStorage.getItem('setting_distance') || 50;
-        if (distanceRange) { // Voeg een check toe voor het geval elementen niet bestaan
+        if (distanceRange) { 
             distanceRange.value = savedDistance;
             distanceValue.textContent = savedDistance;
         }
 
         // Leeftijd
+        // De min/max logica zorgt voor consistente waarden, zelfs als de HTML min/max is aangepast.
         const savedAgeMin = localStorage.getItem('setting_ageMin') || 18;
         const savedAgeMax = localStorage.getItem('setting_ageMax') || 35;
         
@@ -75,14 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showMeToggle) {
             showMeToggle.checked = savedShowMe;
         }
-        
-        // === LAAD DARK MODE VOORKEUR HIER ===
-        loadDarkModePreference();
     }
 
     // --- Event Listeners ---
 
-    // 0. Dark Mode Schakelaar (NIEUWE LOGICA)
+    // 0. Dark Mode Schakelaar (NIEUW)
     if (darkModeToggle) {
         darkModeToggle.addEventListener('change', function() {
             const isEnabled = this.checked;
@@ -94,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(darkModeKey, isEnabled.toString());
         });
     }
-
 
     // 1. Max Afstand Slider
     if (distanceRange) {
@@ -110,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let minVal = parseInt(ageMin.value);
             let maxVal = parseInt(ageMax.value);
 
-            // Zorg ervoor dat min nooit groter is dan max
             if (minVal >= maxVal) {
                 minVal = maxVal - 1;
                 ageMin.value = minVal;
@@ -127,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let minVal = parseInt(ageMin.value);
             let maxVal = parseInt(ageMax.value);
 
-            // Zorg ervoor dat max nooit kleiner is dan min
             if (maxVal <= minVal) {
                 maxVal = minVal + 1;
                 ageMax.value = maxVal;
@@ -149,17 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Uitloggen Functionaliteit
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            // Verwijder de inloggegevens uit localStorage
             localStorage.removeItem('loggedInUser');
             localStorage.removeItem('rememberMe');
-            
-            // Navigeer terug naar de loginpagina
             window.location.href = 'login.html';
         });
     }
 
-
     // Start de instellingen
     loadSettings();
-
 });
