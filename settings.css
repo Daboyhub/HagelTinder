@@ -286,44 +286,4 @@ input:checked + .slider:before {
 
 .nav-item.active {
     color: #fd267a;
-/* ==================================== */
-/* 1. CSS Variabelen voor Thema's (Voeg dit bovenaan settings.css toe) */
-/* ==================================== */
-:root {
-    /* Lichte Modus (Standaard) */
-    --color-background: #f4f7f6;
-    --color-text: #1e1e1e;
-    --color-card-bg: #ffffff;
-    --color-primary: #ff5864; /* Tinder rood */
-    --color-secondary-bg: #e0e0e0;
 }
-
-body.dark-mode {
-    /* Donkere Modus */
-    --color-background: #121212;
-    --color-text: #f4f7f6;
-    --color-card-bg: #1e1e1e;
-    --color-primary: #e04a57;
-    --color-secondary-bg: #2c2c2c;
-}
-
-/* ==================================== */
-/* 2. Algemene Stijlen Aanpassen (Pas je bestaande stijlen aan om de variabelen te gebruiken) */
-/* ==================================== */
-
-/* Voorbeelden van hoe je de variabelen gebruikt: */
-body {
-    background-color: var(--color-background);
-    color: var(--color-text);
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.setting-item {
-    background-color: var(--color-card-bg);
-}
-
-.action-btn {
-    background-color: var(--color-primary);
-}
-
-/* Zorg ervoor dat de switch/slider stijlen ook de variabelen gebruiken indien mogelijk. */
